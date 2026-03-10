@@ -1,4 +1,4 @@
-# Inventry — Inventory Management System
+# Inventory — Inventory Management System
 
 A full-stack portfolio project built with **.NET 8 Web API** and **Angular 17**.
 
