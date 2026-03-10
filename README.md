@@ -54,3 +54,32 @@ ng serve
 cd backend/InventoryAPI.Tests
 dotnet test
 ```
+
+## Screenshots 
+- **Main Page:** Login and registration forms.
+
+![Main Page](screenshots/MainPage.png)
+
+- **Dashboard:** Real-time charts showing inventory stats.
+
+![Dashboard](screenshots/Dashboard-1.png)
+![Dashboard](screenshots/Dashboard-2.png)
+
+- **Product Management:** Product list with pagination, search, and category filter, along with create/edit product forms.
+
+![Product List](screenshots/Products.png)
+
+- **Create and Edit Product:** Forms for adding and updating product details.
+
+![Create Product](screenshots/CreateProducts.png)
+![Edit Product](screenshots/EditProduct.png)
+
+- **History:** Page showing all changes made to products with timestamps and user info.
+
+![History](screenshots/History.png)
+
+- **Create User:** Page to create new users
+
+![CreateUser](screenshots/CreateUser.png)
+
+
