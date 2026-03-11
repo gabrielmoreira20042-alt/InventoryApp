@@ -21,15 +21,18 @@ RUN dotnet publish -c Release -o /app/publish
 
 
 # Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
+# Cria pasta para o SQLite
+RUN mkdir -p /app/data && chmod 777 /app/data
+
+# Copia a aplicação publicada
 COPY --from=build /app/publish .
 
-# copiar Angular build
-COPY --from=angular-build /app/dist/inventory-frontend /app/wwwroot
-
+# Variáveis de ambiente
 ENV ASPNETCORE_URLS=http://+:${PORT:-8080}
+ENV ASPNETCORE_ENVIRONMENT=Production
 
 EXPOSE 8080
 
