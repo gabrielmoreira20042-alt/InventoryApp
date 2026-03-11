@@ -6,8 +6,7 @@ COPY frontend/package*.json ./
 RUN npm install
 
 COPY frontend/ .
-RUN npx ng build --configuration production
-
+RUN node ./node_modules/@angular/cli/bin/ng build --configuration production
 # Build .NET
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
