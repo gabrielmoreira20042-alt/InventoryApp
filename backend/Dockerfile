@@ -19,7 +19,7 @@ RUN dotnet publish -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /app/publish .
-COPY --from=angular-build /app/dist/inventory-frontend /app/wwwroot
+COPY --from=angular-build /app/dist/inventory-frontend/browser /app/wwwroot
 
 # ✅ Create the data directory and give write permissions
 RUN mkdir -p /app/data && chmod 777 /app/data
