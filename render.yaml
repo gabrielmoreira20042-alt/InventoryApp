@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: inventory-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    # Render auto-detects the PORT env var — não precisas de definir aqui
+
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+
+      # ⚠️  Define estes valores no dashboard do Render como "Secret"
+      - key: JWT__Key
+        sync: false          # obriga a definir manualmente no dashboard
+
+      - key: JWT__Issuer
+        value: InventoryAPI
+
+      - key: JWT__Audience
+        value: InventoryClient
+
+      # URL do teu frontend (separa múltiplos com vírgula)
+      # ex: https://my-frontend.onrender.com
+      - key: ALLOWED_ORIGINS
+        sync: false          # define no dashboard
+
+    healthCheckPath: /swagger/index.html
