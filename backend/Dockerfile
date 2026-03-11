@@ -1,3 +1,15 @@
+# Build Angular
+FROM node:20 AS angular-build
+WORKDIR /app
+
+COPY frontend/package*.json ./ 
+RUN npm install
+
+COPY frontend/ .
+RUN npm run build -- --configuration production
+
+
+# Build .NET
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
@@ -9,15 +21,17 @@ WORKDIR /src/InventoryAPI
 
 RUN dotnet publish -c Release -o /app/publish
 
+
+# Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
-RUN mkdir -p /app/data && chmod 777 /app/data
-
 COPY --from=build /app/publish .
 
+# copiar Angular build
+COPY --from=angular-build /app/dist /app/wwwroot
+
 ENV ASPNETCORE_URLS=http://+:${PORT:-8080}
-ENV ASPNETCORE_ENVIRONMENT=Production
 
 EXPOSE 8080
 
