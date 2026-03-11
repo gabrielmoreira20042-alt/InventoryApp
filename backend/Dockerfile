@@ -27,7 +27,7 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 # copiar Angular build
-COPY --from=angular-build /app/dist /app/wwwroot
+COPY --from=angular-build /app/dist/inventory-frontend /app/wwwroot
 
 ENV ASPNETCORE_URLS=http://+:${PORT:-8080}
 
