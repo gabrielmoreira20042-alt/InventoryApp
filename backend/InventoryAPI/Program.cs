@@ -12,13 +12,13 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
-// PORT — Render injects $PORT at runtime
+// PORT
 // ==========================================
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // ==========================================
-// DATABASE — Entity Framework + SQLite
+// DATABASE
 // ==========================================
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -37,12 +37,11 @@ builder.Services.AddScoped<IDashboardService,   DashboardService>();
 builder.Services.AddScoped<ICategoryService,    CategoryService>();
 
 // ==========================================
-// JWT — lê de env vars em produção:
-//   JWT__Key, JWT__Issuer, JWT__Audience
+// JWT
 // ==========================================
-var jwtKey     = Environment.GetEnvironmentVariable("JWT__Key")      ?? builder.Configuration["Jwt:Key"]!;
-var jwtIssuer  = Environment.GetEnvironmentVariable("JWT__Issuer")   ?? builder.Configuration["Jwt:Issuer"]!;
-var jwtAudience = Environment.GetEnvironmentVariable("JWT__Audience") ?? builder.Configuration["Jwt:Audience"]!;
+var jwtKey      = Environment.GetEnvironmentVariable("JWT__Key")       ?? builder.Configuration["Jwt:Key"]!;
+var jwtIssuer   = Environment.GetEnvironmentVariable("JWT__Issuer")    ?? builder.Configuration["Jwt:Issuer"]!;
+var jwtAudience = Environment.GetEnvironmentVariable("JWT__Audience")  ?? builder.Configuration["Jwt:Audience"]!;
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -62,17 +61,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 // ==========================================
-// CORS — define ALLOWED_ORIGINS no Render
-//   ex: https://myapp.onrender.com,https://myapp.vercel.app
+// CORS — only needed if you keep a separate
+// dev frontend on a different port
 // ==========================================
-var allowedOrigins = (Environment.GetEnvironmentVariable("ALLOWED_ORIGINS") ?? "http://localhost:4200")
-    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    options.AddPolicy("DevOnly", policy =>
     {
-        policy.WithOrigins(allowedOrigins)
+        policy.WithOrigins("http://localhost:4200")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -117,7 +113,6 @@ var app = builder.Build();
 
 // ==========================================
 // MIDDLEWARE PIPELINE
-// Swagger disponível em todos os ambientes
 // ==========================================
 app.UseSwagger();
 app.UseSwaggerUI(c =>
@@ -126,17 +121,26 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
-// Render termina SSL externamente — HTTPS redirect removido
-app.UseCors("AllowFrontend");
+// ✅ Serve Angular from wwwroot
+app.UseDefaultFiles();   // serves index.html for "/"
+app.UseStaticFiles();    // serves JS/CSS/assets from wwwroot
+
+// Only apply CORS in development (production is same-origin)
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("DevOnly");
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Redireciona / para Swagger
-app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+// ✅ Catch-all: lets Angular Router handle /products, /dashboard, etc.
+// Must come AFTER MapControllers so API routes take priority
+app.MapFallbackToFile("index.html");
 
 // ==========================================
-// CRIAR BASE DE DADOS E SEED
+// DATABASE + SEED
 // ==========================================
 using (var scope = app.Services.CreateScope())
 {
