@@ -6,7 +6,8 @@ RUN dotnet restore InventoryAPI/InventoryAPI.csproj
 
 COPY backend/InventoryAPI/ InventoryAPI/
 WORKDIR /src/InventoryAPI
-RUN dotnet publish -c Release -o /app/publish --no-restore
+
+RUN dotnet publish -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
