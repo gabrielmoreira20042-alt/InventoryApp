@@ -62,12 +62,11 @@ public class AppDbContext : DbContext
 /// </summary>
 public static class DbSeeder
 {
-    public static void Seed(AppDbContext context)
+   public static void Seed(AppDbContext context)
+{
+    // Seed categories independently
+    if (!context.Categories.Any())
     {
-        // Only seed if the table is empty
-        if (context.Categories.Any()) return;
-
-        // Create initial categories
         var categories = new List<Category>
         {
             new() { Name = "Electronics",  Description = "Phones, tablets, computers" },
@@ -77,30 +76,31 @@ public static class DbSeeder
         };
         context.Categories.AddRange(categories);
         context.SaveChanges();
-
-        // Create default admin user
-        if (!context.Users.Any())
-        {
-            var admin = new User
-            {
-                Name         = "Administrator",
-                Email        = "admin@inventory.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
-                Role         = "Admin"
-            };
-            context.Users.Add(admin);
-            context.SaveChanges();
-
-            // Create sample products
-            var products = new List<Product>
-            {
-                new() { Name = "iPhone 15",      Description = "Apple smartphone",          Price = 999.99m,  Quantity = 50,  SKU = "APPL-001", CategoryId = categories[0].Id, UserId = admin.Id },
-                new() { Name = "MacBook Pro",    Description = "Apple M3 laptop",           Price = 2499.99m, Quantity = 20,  SKU = "APPL-002", CategoryId = categories[0].Id, UserId = admin.Id },
-                new() { Name = "Premium T-Shirt",Description = "100% cotton t-shirt",       Price = 29.99m,   Quantity = 200, SKU = "CLTH-001", CategoryId = categories[1].Id, UserId = admin.Id },
-                new() { Name = "Claw Hammer",    Description = "Carpenter's claw hammer",   Price = 15.50m,   Quantity = 100, SKU = "TOOL-001", CategoryId = categories[3].Id, UserId = admin.Id }
-            };
-            context.Products.AddRange(products);
-            context.SaveChanges();
-        }
     }
+
+    // Seed admin user independently ✅
+    if (!context.Users.Any())
+    {
+        var categories = context.Categories.ToList();
+        var admin = new User
+        {
+            Name         = "Administrator",
+            Email        = "admin@inventory.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+            Role         = "Admin"
+        };
+        context.Users.Add(admin);
+        context.SaveChanges();
+
+        var products = new List<Product>
+        {
+            new() { Name = "iPhone 15",       Description = "Apple smartphone",        Price = 999.99m,  Quantity = 50,  SKU = "APPL-001", CategoryId = categories[0].Id, UserId = admin.Id },
+            new() { Name = "MacBook Pro",     Description = "Apple M3 laptop",         Price = 2499.99m, Quantity = 20,  SKU = "APPL-002", CategoryId = categories[0].Id, UserId = admin.Id },
+            new() { Name = "Premium T-Shirt", Description = "100% cotton t-shirt",     Price = 29.99m,   Quantity = 200, SKU = "CLTH-001", CategoryId = categories[1].Id, UserId = admin.Id },
+            new() { Name = "Claw Hammer",     Description = "Carpenter's claw hammer", Price = 15.50m,   Quantity = 100, SKU = "TOOL-001", CategoryId = categories[3].Id, UserId = admin.Id }
+        };
+        context.Products.AddRange(products);
+        context.SaveChanges();
+    }
+}
 }
