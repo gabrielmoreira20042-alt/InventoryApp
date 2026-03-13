@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import {computed, Injectable, signal} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
@@ -49,18 +49,19 @@ export class AuthService {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
-  isLoggedIn(): boolean {
-    const token = this.getToken();
-    if (!token) return false;
+  isLoggedIn = computed(() => {
+    const user = this.currentUser();
+    if (!user) return false;
 
-    // Verificar se o token ainda não expirou
     try {
+      const token = localStorage.getItem(this.TOKEN_KEY);
+      if (!token) return false;
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload.exp * 1000 > Date.now();
     } catch {
       return false;
     }
-  }
+  });
 
   isAdmin(): boolean {
     return this.currentUser()?.role === 'Admin';
